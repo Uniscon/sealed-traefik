@@ -5,7 +5,7 @@ metadata:
 data:
   traefik.toml: |
     # traefik.toml
-    logLevel = "debug"
+    logLevel = "info"
     defaultEntryPoints = ["http","https"]
     [entryPoints]
       [entryPoints.http]
