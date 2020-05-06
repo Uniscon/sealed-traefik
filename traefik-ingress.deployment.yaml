@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: traefik
+  labels:
+    app: traefik
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: traefik
+  template:
+    metadata:
+      annotations:
+        checksum/config: 148a55cc9ea94395b8859d8f4235a813688cf2776ea17eeed9884294f694200d
+      labels:
+        app: traefik
+    spec:
+      serviceAccountName: default
+      terminationGracePeriodSeconds: 60
+      containers:
+      - image: traefik:1.7.20
+        imagePullPolicy: IfNotPresent
+        name: traefik
+        resources:
+          {}
+        readinessProbe:
+          httpGet:
+            path: /ping
+            port: "http"
+          failureThreshold: 1
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 2
+        livenessProbe:
+          httpGet:
+            path: /ping
+            port: "http"
+          failureThreshold: 3
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 2
+        volumeMounts:
+        - mountPath: /config
+          name: config
+        - mountPath: /ssl
+          name: ssl
+        ports:
+        - name: http
+          containerPort: 80
+          protocol: TCP
+        - name: httpn
+          containerPort: 8880
+          protocol: TCP
+        - name: dashboard
+          containerPort: 8083
+          protocol: TCP
+        - name: https
+          containerPort: 443
+          protocol: TCP
+        args:
+        - --configfile=/config/traefik.toml
+
+      volumes:
+      - name: config
+        configMap:
+          name: traefik
+      - name: ssl
+        secret:
+          secretName: traefik-default-cert

@@ -1,0 +1,43 @@
+= Deploy traefik ingress controller on kubernetes
+Uniscon GmbH <support@sealedplatform.com>
+v1.0, 2019-06-28
+:sp-caption!:
+ifndef::imagesdir[:imagesdir: images]
+:title-logo-image: image:uniscontuevlogo.png[align=center,pdfwidth=50%]
+
+This guide will walk you through deploying traefik ingress on Sealed Platform. The guide assume that the reader is already registered with Sealed Platform as a Tenant user, and can login to the Dashboard. It is also strongly recommended to go through the Developer's guide for detailed instructions.
+
+== Step 1 : Prepare the default-server.secret.yaml with your domain certs
+
+Login to the Sealed Platform dashboard as the Tenant admin user. Navigate to 'Servers' section, click on a listed server, under the Certificates download "Chain PEM" and "Key PEM"  parts to your local.
+
+Generate base64 encoded strings without line wrapping for <base64-cert-pem> and <base64-key-pem> respectively, from .pem files
+
+ $ base64 -w 0 <YourDomain_chain.pem>
+ $ base64 -w 0 <YourDomain_key.pem> 
+
+Update default-server.secret.yaml file <base64 -w 0 cert_chain.pem>, <base64 -w 0 cert_key.pem> with above base64 encoded strings. 
+
+
+== Step 2 : Prepare the traefik-ingress.service.yaml file with your assigned server InternalIP.
+
+Login to the Sealed Platform dashboard as the Tenant admin user. Navigate to 'Servers' section, click on a listed server, find the Internal IPs.
+
+Update traefik-ingress.service.yaml file <Internal IP> with Internal IP.
+
+== Step 3 : Prepare the traefik-dashboard-ingress.yaml file with your <DomainName>.
+
+Update traefik-dashboard-ingress.yaml file <DomainName>  with domain name which you created for step1
+
+== Step 4 : Apply the traefik-ingress yaml files in below order.
+
+ $ kubectl apply -f default-server.secret.yaml
+ $ kubectl apply -f traefik-config.configmap.yaml
+ $ kubectl apply -f traefik-ingress.deployment.yaml
+ $ kubectl apply -f traefik-ingress.service.yaml
+ $ kubectl apply -f traefik-dashboard-svc.yaml
+ $ kubectl apply -f traefik-dashboard-ingress.yaml
+
+Verify the traefik ingress dashboard with https://<DomainName> , you should see dashboard services frontend and backend details.
+
+NOTE: At the moment sealedplatform does not support traefik 2.x version. 
